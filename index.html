@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="BEEP BEEP Office">
+    <title>Audit-Sentinel | Intelligence BODACC & SIREN</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #1e40af; border-radius: 50%; width: 18px; height: 18px; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .tab-active { background-color: #0f172a; color: #38bdf8; border-bottom: 4px solid #38bdf8; }
+        .tab-inactive { background-color: #f8fafc; color: #64748b; }
+        .empty-cell { color: #cbd5e1; font-style: italic; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .sentinel-gradient { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+    </style>
+</head>
+<body class="bg-slate-100 p-2 md:p-8 font-sans text-slate-900">
+
+    <div class="max-w-[1600px] mx-auto bg-white shadow-2xl rounded-2xl overflow-hidden border border-slate-200">
+        
+        <header class="sentinel-gradient p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4 border-b border-blue-500/30">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-blue-500/20 rounded-lg border border-blue-400/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04kM12 21a9.003 9.003 0 008.313-5.547M12 21a9.003 9.003 0 01-8.313-5.547M12 21V12.428" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-black tracking-tighter uppercase italic">Audit-<span class="text-blue-400">Sentinel</span></h1>
+                    <p class="text-blue-200/60 text-xs font-bold tracking-widest uppercase">Surveillance & Analyse de risques</p>
+                </div>
+            </div>
+            <button onclick="resetEverything()" class="bg-slate-800 hover:bg-red-600 text-white text-xs font-bold py-2.5 px-6 rounded-md transition-all border border-slate-700 flex items-center gap-2">
+                RÉINITIALISER L'OUTIL
+            </button>
+        </header>
+
+        <nav class="flex bg-slate-50 border-b border-slate-200">
+            <button onclick="switchTab('siren')" id="tabSiren" class="flex-1 py-4 font-black text-sm uppercase tracking-widest transition-all tab-active">
+                01. Identification SIREN
+            </button>
+            <button onclick="switchTab('bodacc')" id="tabBodacc" class="flex-1 py-4 font-black text-sm uppercase tracking-widest transition-all tab-inactive">
+                02. Diagnostic BODACC
+            </button>
+        </nav>
+
+        <div id="contentSiren" class="p-6 space-y-6">
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h2 class="text-slate-800 font-bold mb-4 flex items-center gap-2">
+                        <span class="w-2 h-2 bg-blue-500 rounded-full"></span> Recherche Manuelle
+                    </h2>
+                    <div class="flex gap-2">
+                        <input type="text" id="searchInput" onkeypress="if(event.key==='Enter') searchCompany()" placeholder="Ex: SAS MARTIN, DUPONT..." class="flex-1 p-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                        <button onclick="searchCompany()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold transition shadow-md">SCANNER</button>
+                    </div>
+                    <div id="statusSearch" class="mt-2 text-[10px] font-bold h-4 text-slate-500 uppercase tracking-tighter"></div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h2 class="text-slate-800 font-bold mb-4 flex items-center gap-2">
+                        <span class="w-2 h-2 bg-purple-500 rounded-full"></span> Import de masse (Excel)
+                    </h2>
+                    <div class="flex gap-2">
+                        <input type="file" id="fileInputSiren" accept=".xlsx" class="text-xs file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer w-full">
+                        <button onclick="processFileSiren()" class="bg-slate-800 hover:bg-black text-white px-6 py-2.5 rounded-lg font-bold transition">IMPORTER</button>
+                    </div>
+                    <div id="statusFileSiren" class="mt-2 text-[10px] font-bold h-4 text-slate-500 uppercase tracking-tighter"></div>
+                </div>
+            </div>
+
+            <div id="resultsSection" class="hidden bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-2xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-white text-sm uppercase tracking-widest">Cible(s) détectée(s) :</h3>
+                    <button onclick="addSelectedToFinalList()" class="bg-blue-500 hover:bg-blue-400 text-white px-6 py-2 rounded-lg font-black text-xs shadow-lg transition">AJOUTER À LA SENTINELLE</button>
+                </div>
+                <div id="resultsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto custom-scroll p-1"></div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <h3 class="font-black text-slate-800 text-xs uppercase tracking-widest">Registre de surveillance (<span id="countSiren" class="text-blue-600">0</span>)</h3>
+                    <button onclick="sendToBodacc()" id="btnSendBodacc" disabled class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-lg font-black text-xs shadow-lg disabled:opacity-30 disabled:cursor-not-allowed transition uppercase tracking-widest">
+                        Lancer l'Analyse Critique →
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-800 text-slate-200 font-bold uppercase tracking-tighter">
+                            <tr>
+                                <th class="p-4 w-12 text-center">#</th>
+                                <th class="p-4">SIREN</th>
+                                <th class="p-4">Dénomination Officielle</th>
+                                <th class="p-4">Siège</th>
+                                <th class="p-4">État Admin.</th>
+                                <th class="p-4 text-center">Gestion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="finalTableBodySiren" class="divide-y divide-slate-100">
+                            <tr><td colspan="6" class="p-12 text-center text-slate-400 italic">Aucune donnée en attente.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="contentBodacc" class="p-6 hidden">
+            <div id="statusArea" class="mb-6 text-sm font-black text-blue-700 min-h-[20px] bg-blue-50 p-4 rounded-lg border border-blue-100"></div>
+
+            <div class="flex flex-col lg:flex-row justify-between lg:items-end mb-6 gap-4">
+                <div>
+                    <h3 class="font-black text-slate-800 uppercase tracking-tight text-xl">Rapport d'Événements Judiciaires</h3>
+                    <p class="text-slate-500 text-xs">Historique consolidé (Jugement vs Parution)</p>
+                </div>
+                <button onclick="exportData()" id="btnExport" disabled class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-3 px-8 rounded-lg shadow-xl disabled:opacity-30 transition uppercase tracking-widest">
+                    Exporter (.xlsx)
+                </button>
+            </div>
+
+            <div class="overflow-x-auto max-h-[750px] overflow-y-auto custom-scroll border border-slate-200 rounded-xl shadow-2xl">
+                <table class="min-w-full leading-normal border-collapse" id="mainTable">
+                    <thead>
+                        <tr class="bg-slate-900 text-white sticky top-0 z-10 shadow-md">
+                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase w-1">
+                                <input type="checkbox" id="selectAllCheckbox" onclick="toggleSelectAll()" disabled class="h-4 w-4 rounded">
+                            </th>
+                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase">SIREN</th>
+                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase">Nom / Gérant</th>
+                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase text-blue-400">📅 Sauv.</th>
+                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase text-orange-400">📅 Redr.</th>
+                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase text-red-400">📅 Liq.</th>
+                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase text-blue-300">Durée</th>
+                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase underline text-blue-400">Dernier Événement</th>
+                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase">Tribunal</th>
+                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase">Extrait</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="bg-white text-[11px]"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer class="bg-slate-900 p-4 text-center text-[10px] text-slate-500 font-bold border-t border-slate-800">
+            AUDIT-SENTINEL CORE v3.9.3 • DOUBLE-DATING RESTORED • &copy; 2026 BEEP BEEP Office
+        </footer>
+    </div>
+
+    <script>
+        const BASE_API = "https://bodacc-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/annonces-commerciales/records";
+        const API_SEARCH = "https://recherche-entreprises.api.gouv.fr/search";
+        const KEYWORDS = {
+            LIQ: ["liquidation judiciaire", "liquidation simplifiée"],
+            RED: ["redressement judiciaire"],
+            SAU: ["sauvegarde", "sauvegarde accélérée"],
+            CLO: ["clôture", "cloture"]
+        };
+
+        let finalList = []; 
+        let resultsDataBodacc = [];
+        const sleep = ms => new Promise(res => setTimeout(res, ms));
+
+        function switchTab(tab) {
+            document.getElementById('contentSiren').classList.toggle('hidden', tab !== 'siren');
+            document.getElementById('contentBodacc').classList.toggle('hidden', tab !== 'bodacc');
+            document.getElementById('tabSiren').className = tab === 'siren' ? 'flex-1 py-4 font-black text-sm uppercase tracking-widest tab-active' : 'flex-1 py-4 font-black text-sm uppercase tracking-widest tab-inactive';
+            document.getElementById('tabBodacc').className = tab === 'bodacc' ? 'flex-1 py-4 font-black text-sm uppercase tracking-widest tab-active' : 'flex-1 py-4 font-black text-sm uppercase tracking-widest tab-inactive';
+        }
+
+        async function searchCompany() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+            document.getElementById('statusSearch').innerHTML = '<span class="loader"></span> RECHERCHE...';
+            try {
+                const res = await fetch(`${API_SEARCH}?q=${encodeURIComponent(query)}&per_page=12`);
+                const data = await res.json();
+                displaySearchResults(data.results || []);
+                document.getElementById('statusSearch').innerHTML = 'SCAN TERMINÉ.';
+            } catch (e) { document.getElementById('statusSearch').innerHTML = 'ERREUR.'; }
+        }
+
+        function displaySearchResults(results) {
+            const container = document.getElementById('resultsSection');
+            const list = document.getElementById('resultsList');
+            container.classList.remove('hidden');
+            list.innerHTML = results.map((co, index) => `
+                <label class="flex items-start gap-3 p-3 bg-slate-800 border border-slate-700 rounded-xl hover:border-blue-500 cursor-pointer transition-all">
+                    <input type="checkbox" data-idx="${index}" class="mt-1 h-5 w-5 rounded text-blue-500">
+                    <div class="overflow-hidden">
+                        <div class="font-bold text-white text-[11px] truncate uppercase">${co.nom_complet}</div>
+                        <div class="text-[10px] font-mono text-blue-400 font-bold">${co.siren}</div>
+                    </div>
+                </label>
+            `).join('');
+            window.currentSearchData = results;
+        }
+
+        function addSelectedToFinalList() {
+            const cbs = document.querySelectorAll('#resultsList input[type="checkbox"]:checked');
+            cbs.forEach(cb => {
+                const co = window.currentSearchData[cb.dataset.idx];
+                if (!finalList.some(x => x.siren === co.siren)) {
+                    finalList.push({ siren: co.siren, nom: co.nom_complet, ville: co.siege.libelle_commune, statut: co.etat_administratif === 'A' ? 'ACTIF' : 'FERMÉ' });
+                }
+            });
+            renderFinalTable();
+            document.getElementById('resultsSection').classList.add('hidden');
+        }
+
+        async function processFileSiren() {
+            const fileInput = document.getElementById('fileInputSiren');
+            const status = document.getElementById('statusFileSiren');
+            if (!fileInput.files[0]) return;
+            status.innerHTML = '<span class="loader"></span> LECTURE...';
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                for (let i = 0; i < jsonData.length; i++) {
+                    const keys = Object.keys(jsonData[i]);
+                    const targetKey = keys.find(k => k.toLowerCase().includes('siren') || k.toLowerCase().includes('nom'));
+                    const val = jsonData[i][targetKey];
+                    if (val) {
+                        status.innerHTML = `<span class="loader"></span> IMPORT ${i+1}/${jsonData.length}...`;
+                        try {
+                            const res = await fetch(`${API_SEARCH}?q=${encodeURIComponent(val)}&per_page=1`);
+                            const result = await res.json();
+                            if (result.results?.[0]) {
+                                const co = result.results[0];
+                                if (!finalList.some(x => x.siren === co.siren)) {
+                                    finalList.push({ siren: co.siren, nom: co.nom_complet, ville: co.siege.libelle_commune, statut: co.etat_administratif === 'A' ? 'ACTIF' : 'FERMÉ' });
+                                    renderFinalTable();
+                                }
+                            }
+                            await sleep(300);
+                        } catch (e) {}
+                    }
+                }
+                status.innerHTML = "✅ IMPORT TERMINÉ.";
+            };
+            reader.readAsArrayBuffer(fileInput.files[0]);
+        }
+
+        function renderFinalTable() {
+            const body = document.getElementById('finalTableBodySiren');
+            document.getElementById('countSiren').innerText = finalList.length;
+            document.getElementById('btnSendBodacc').disabled = finalList.length === 0;
+            body.innerHTML = finalList.length ? finalList.map((co, idx) => `
+                <tr class="hover:bg-slate-50 border-b border-slate-100">
+                    <td class="p-4 text-center text-slate-400 text-[10px]">${idx + 1}</td>
+                    <td class="p-4 font-black text-blue-700 font-mono text-sm">${co.siren}</td>
+                    <td class="p-4 font-bold uppercase text-slate-700 text-[11px]">${co.nom}</td>
+                    <td class="p-4 text-[11px] text-slate-500">${co.ville || '-'}</td>
+                    <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-black ${co.statut === 'ACTIF' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${co.statut}</span></td>
+                    <td class="p-4 text-center"><button onclick="removeFromList('${co.siren}')" class="text-slate-300 hover:text-red-600 font-black text-[10px]">RÉVOQUER</button></td>
+                </tr>
+            `).join('') : '<tr><td colspan="6" class="p-12 text-center text-slate-400 italic">Aucune donnée.</td></tr>';
+        }
+
+        function removeFromList(s) { finalList = finalList.filter(x => x.siren !== s); renderFinalTable(); }
+
+        function getAdvancedData(r) {
+            let jt = r.jugement || "";
+            let dj = r.datejugement || r.dateparution;
+            let dp = r.dateparution;
+            if (typeof jt === "string" && jt.trim().startsWith('{')) {
+                try {
+                    const o = JSON.parse(jt);
+                    if (o.date) dj = o.date;
+                    jt = o.complementJugement || jt;
+                } catch(e){}
+            }
+            return { dj, dp, jt };
+        }
+
+        async function sendToBodacc() {
+            switchTab('bodacc');
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = "";
+            resultsDataBodacc = [];
+            for (let i = 0; i < finalList.length; i++) {
+                const co = finalList[i];
+                document.getElementById('statusArea').innerHTML = `<span class="loader"></span> ANALYSE : ${co.nom}`;
+                const info = await fetchFullHistory(co.siren);
+                displayBodaccRow(co.siren, info, i);
+                resultsDataBodacc.push({
+                    SIREN: co.siren, NOM: co.nom,
+                    SAUV_JUG: info.dates.SAUVEGARDE.j, SAUV_PARU: info.dates.SAUVEGARDE.p,
+                    REDR_JUG: info.dates.REDRESSEMENT.j, REDR_PARU: info.dates.REDRESSEMENT.p,
+                    LIQ_JUG: info.dates.LIQUIDATION.j, LIQ_PARU: info.dates.LIQUIDATION.p,
+                    DUREE: info.duration, EVENT: info.latestEvent.label,
+                    DERNIER_JUG: info.latestEvent.details.dateJugement,
+                    TRIBUNAL: info.latestEvent.details.tribunal
+                });
+                await sleep(300);
+            }
+            document.getElementById('statusArea').innerHTML = "✅ ANALYSE TERMINÉE.";
+            document.getElementById('btnExport').disabled = false;
+            document.getElementById('selectAllCheckbox').disabled = false;
+        }
+
+        async function fetchFullHistory(siren) {
+            const res = await fetch(`${BASE_API}?where=registre%3A%22${siren}%22&order_by=dateparution DESC&limit=100`);
+            const data = await res.json();
+            const results = data.results || [];
+            const procDates = { SAUVEGARDE: { j: null, p: null }, REDRESSEMENT: { j: null, p: null }, LIQUIDATION: { j: null, p: null } };
+            let latestEvent = { label: "R.A.S", details: { dateJugement: "N/A", dateParution: "N/A", tribunal: "N/A", extrait: "Aucune procédure." }, date: null, style: "text-emerald-700 bg-emerald-100 border border-emerald-200" };
+            let firstDate = null;
+
+            [...results].reverse().forEach(r => {
+                const d = getAdvancedData(r);
+                const text = ((r.famille || "") + " " + (r.nature || "") + " " + (r.jugement || "")).toLowerCase();
+                if (KEYWORDS.LIQ.some(kw => text.includes(kw)) && !procDates.LIQUIDATION.j) { procDates.LIQUIDATION = {j:formatDate(d.dj), p:formatDate(d.dp)}; }
+                if (KEYWORDS.RED.some(kw => text.includes(kw)) && !procDates.REDRESSEMENT.j) { procDates.REDRESSEMENT = {j:formatDate(d.dj), p:formatDate(d.dp)}; }
+                if (KEYWORDS.SAU.some(kw => text.includes(kw)) && !procDates.SAUVEGARDE.j) { procDates.SAUVEGARDE = {j:formatDate(d.dj), p:formatDate(d.dp)}; }
+                if (!firstDate && (procDates.SAUVEGARDE.j || procDates.REDRESSEMENT.j || procDates.LIQUIDATION.j)) firstDate = new Date(d.dj);
+            });
+
+            results.forEach(r => {
+                const d = getAdvancedData(r);
+                const text = ((r.famille || "") + " " + (r.nature || "") + " " + (r.jugement || "")).toLowerCase();
+                if (!latestEvent.date || new Date(d.dp) > latestEvent.date) {
+                    let label = null, style = "";
+                    if (KEYWORDS.CLO.some(kw => text.includes(kw))) { label = "CLÔTURE"; style = "text-slate-700 bg-slate-100 border border-slate-300"; }
+                    else if (KEYWORDS.LIQ.some(kw => text.includes(kw))) { label = "LIQUIDATION"; style = "text-red-700 bg-red-100 border border-red-300"; }
+                    else if (KEYWORDS.RED.some(kw => text.includes(kw))) { label = "REDRESSEMENT"; style = "text-orange-700 bg-orange-100 border border-orange-300"; }
+                    else if (KEYWORDS.SAU.some(kw => text.includes(kw))) { label = "SAUVEGARDE"; style = "text-blue-700 bg-blue-100 border border-blue-300"; }
+                    if (label) latestEvent = { label, details: { dateJugement: formatDate(d.dj), dateParution: formatDate(d.dp), tribunal: r.tribunal || "N/A", extrait: d.jt.substring(0, 150) }, date: new Date(d.dp), style };
+                }
+            });
+
+            let duration = "N/A";
+            if (firstDate && latestEvent.date) {
+                const days = Math.ceil(Math.abs(latestEvent.date - firstDate) / (1000 * 60 * 60 * 24));
+                duration = days < 30 ? `${days} j` : `${Math.floor(days/30.44)} mois`;
+            }
+            return { dates: procDates, latestEvent, duration };
+        }
+
+        function displayBodaccRow(siren, info, idx) {
+            const tableBody = document.getElementById('tableBody');
+            const row = document.createElement('tr');
+            row.className = "hover:bg-slate-50 border-b border-slate-100";
+            const dCell = (o) => o.j ? `<div><div class="font-black text-slate-900">${o.j}</div><div class="text-[9px] text-slate-400 italic font-bold">Paru: ${o.p}</div></div>` : `<span class="empty-cell">N/A</span>`;
+
+            row.innerHTML = `
+                <td class="px-3 py-5 w-1"><input type="checkbox" data-id="${idx}" class="row-checkbox h-4 w-4 rounded"></td>
+                <td class="px-3 py-5 font-mono font-bold text-blue-700">${siren}</td>
+                <td class="px-3 py-5 font-black uppercase text-slate-800">${finalList[idx].nom}</td>
+                <td class="px-3 py-5">${dCell(info.dates.SAUVEGARDE)}</td>
+                <td class="px-3 py-5">${dCell(info.dates.REDRESSEMENT)}</td>
+                <td class="px-3 py-5">${dCell(info.dates.LIQUIDATION)}</td>
+                <td class="px-3 py-5 font-black text-blue-600">${info.duration}</td>
+                <td class="px-3 py-5 bg-blue-50/30">
+                    <span class="px-3 py-1 rounded text-[10px] font-black ${info.latestEvent.style} mb-1 block w-fit">${info.latestEvent.label}</span>
+                    <div class="font-black text-slate-900 text-[10px]">${info.latestEvent.details.dateJugement}</div>
+                    <div class="text-[9px] text-slate-400 italic font-bold">Paru: ${info.latestEvent.details.dateParution}</div>
+                </td>
+                <td class="px-3 py-5 text-[10px] text-slate-400 uppercase font-bold">${info.latestEvent.details.tribunal}</td>
+                <td class="px-3 py-5 text-[10px] text-slate-500 max-w-[200px] leading-tight">${info.latestEvent.details.extrait}</td>
+            `;
+            tableBody.appendChild(row);
+        }
+
+        function formatDate(d) { if (!d) return null; const date = new Date(d); return isNaN(date.getTime()) ? null : date.toLocaleDateString("fr-FR"); }
+        function toggleSelectAll() { const m = document.getElementById('selectAllCheckbox'); document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = m.checked); }
+        function exportData() {
+            const sel = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => resultsDataBodacc[cb.dataset.id]);
+            if (sel.length === 0) return alert("AUCUNE LIGNE SÉLECTIONNÉE.");
+            const ws = XLSX.utils.json_to_sheet(sel);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Audit");
+            XLSX.writeFile(wb, `Audit_Sentinel_${new Date().getTime()}.xlsx`);
+        }
+        function resetEverything() { if (confirm("RÉINITIALISER ?")) location.reload(); }
+    </script>
+</body>
+</html>
