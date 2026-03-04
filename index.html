@@ -8,43 +8,60 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #1e40af; border-radius: 50%; width: 18px; height: 18px; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #60a5fa; border-radius: 50%; width: 18px; height: 18px; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .tab-active { background-color: #0f172a; color: #38bdf8; border-bottom: 4px solid #38bdf8; }
-        .tab-inactive { background-color: #f8fafc; color: #64748b; }
+        .tab-active { background-color: white; color: #1e293b; border-bottom: 4px solid #60a5fa; }
+        .tab-inactive { background-color: #f1f5f9; color: #64748b; }
         .empty-cell { color: #cbd5e1; font-style: italic; }
         .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .sentinel-gradient { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        .sentinel-gradient { background: linear-gradient(135deg, #e0f2fe 0%, #f1f5f9 100%); }
+        
+        /* Animation du nouveau logo */
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+        @keyframes rotate-circles { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .circle-base { position: absolute; border-radius: 50%; animation: pulse 3s infinite ease-in-out; }
+        .c1 { width: 30px; height: 30px; border: 3px solid #60a5fa; left: 10px; top: 10px; animation-delay: 0s; }
+        .c2 { width: 25px; height: 25px; border: 3px solid #a3e635; left: 15px; top: 15px; animation-delay: 0.5s; }
+        .c3 { width: 20px; height: 20px; border: 3px solid #f97316; left: 20px; top: 20px; animation-delay: 1s; }
+        .c4 { width: 15px; height: 15px; border: 3px solid #14b8a6; left: 25px; top: 25px; animation-delay: 1.5s; }
+        .circle-group { position: relative; width: 50px; height: 50px; animation: rotate-circles 10s infinite linear; }
     </style>
 </head>
-<body class="bg-slate-100 p-2 md:p-8 font-sans text-slate-900">
+<body class="bg-slate-50 p-2 md:p-8 font-sans text-slate-800">
 
-    <div class="max-w-[1600px] mx-auto bg-white shadow-2xl rounded-2xl overflow-hidden border border-slate-200">
+    <div class="max-w-[1600px] mx-auto bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-100">
         
-        <header class="sentinel-gradient p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4 border-b border-blue-500/30">
+        <header class="sentinel-gradient p-6 text-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-slate-200">
             <div class="flex items-center gap-4">
-                <div class="p-3 bg-blue-500/20 rounded-lg border border-blue-400/30">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04kM12 21a9.003 9.003 0 008.313-5.547M12 21a9.003 9.003 0 01-8.313-5.547M12 21V12.428" />
-                    </svg>
+                <div class="p-3 bg-white rounded-lg border border-slate-200 shadow-sm flex items-center justify-center">
+                    <div class="circle-group">
+                        <div class="circle-base c1"></div>
+                        <div class="circle-base c2"></div>
+                        <div class="circle-base c3"></div>
+                        <div class="circle-base c4"></div>
+                    </div>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-black tracking-tighter uppercase italic">Audit-<span class="text-blue-400">Sentinel</span></h1>
-                    <p class="text-blue-200/60 text-xs font-bold tracking-widest uppercase">Surveillance & Analyse de risques</p>
+                    <h1 class="text-3xl font-black tracking-tighter uppercase italic">Audit-<span class="text-blue-600">Sentinel</span></h1>
+                    <p class="text-slate-500 text-xs font-bold tracking-widest uppercase">Surveillance & Analyse de risques</p>
                 </div>
             </div>
-            <button onclick="resetEverything()" class="bg-slate-800 hover:bg-red-600 text-white text-xs font-bold py-2.5 px-6 rounded-md transition-all border border-slate-700 flex items-center gap-2">
+            <button onclick="resetEverything()" class="bg-slate-100 hover:bg-red-100 text-slate-700 text-xs font-bold py-2.5 px-6 rounded-md transition-all border border-slate-200 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 RÉINITIALISER L'OUTIL
             </button>
         </header>
 
-        <nav class="flex bg-slate-50 border-b border-slate-200">
+        <nav class="flex bg-slate-100 border-b border-slate-200">
             <button onclick="switchTab('siren')" id="tabSiren" class="flex-1 py-4 font-black text-sm uppercase tracking-widest transition-all tab-active">
                 01. Identification SIREN
             </button>
             <button onclick="switchTab('bodacc')" id="tabBodacc" class="flex-1 py-4 font-black text-sm uppercase tracking-widest transition-all tab-inactive">
                 02. Diagnostic BODACC
+            </button>
+            <button onclick="switchTab('veille')" id="tabVeille" class="flex-1 py-4 font-black text-sm uppercase tracking-widest transition-all tab-inactive">
+                03. Veille & Suivi
             </button>
         </nav>
 
@@ -55,7 +72,7 @@
                         <span class="w-2 h-2 bg-blue-500 rounded-full"></span> Recherche Manuelle
                     </h2>
                     <div class="flex gap-2">
-                        <input type="text" id="searchInput" onkeypress="if(event.key==='Enter') searchCompany()" placeholder="Ex: SAS MARTIN, DUPONT..." class="flex-1 p-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                        <input type="text" id="searchInput" onkeypress="if(event.key==='Enter') searchCompany()" placeholder="Ex: SAS MARTIN, DUPONT..." class="flex-1 p-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-300 outline-none text-sm">
                         <button onclick="searchCompany()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold transition shadow-md">SCANNER</button>
                     </div>
                     <div id="statusSearch" class="mt-2 text-[10px] font-bold h-4 text-slate-500 uppercase tracking-tighter"></div>
@@ -67,16 +84,16 @@
                     </h2>
                     <div class="flex gap-2">
                         <input type="file" id="fileInputSiren" accept=".xlsx" class="text-xs file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer w-full">
-                        <button onclick="processFileSiren()" class="bg-slate-800 hover:bg-black text-white px-6 py-2.5 rounded-lg font-bold transition">IMPORTER</button>
+                        <button onclick="processFileSiren()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-2.5 rounded-lg font-bold transition border border-slate-200">IMPORTER</button>
                     </div>
                     <div id="statusFileSiren" class="mt-2 text-[10px] font-bold h-4 text-slate-500 uppercase tracking-tighter"></div>
                 </div>
             </div>
 
-            <div id="resultsSection" class="hidden bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-2xl">
+            <div id="resultsSection" class="hidden bg-slate-100 p-6 rounded-xl border border-slate-200 shadow-lg">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-white text-sm uppercase tracking-widest">Cible(s) détectée(s) :</h3>
-                    <button onclick="addSelectedToFinalList()" class="bg-blue-500 hover:bg-blue-400 text-white px-6 py-2 rounded-lg font-black text-xs shadow-lg transition">AJOUTER À LA SENTINELLE</button>
+                    <h3 class="font-bold text-slate-800 text-sm uppercase tracking-widest">Cible(s) détectée(s) :</h3>
+                    <button onclick="addSelectedToFinalList()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-black text-xs shadow-lg transition">AJOUTER À LA SENTINELLE</button>
                 </div>
                 <div id="resultsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto custom-scroll p-1"></div>
             </div>
@@ -90,7 +107,7 @@
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs">
-                        <thead class="bg-slate-800 text-slate-200 font-bold uppercase tracking-tighter">
+                        <thead class="bg-slate-100 text-slate-900 font-bold uppercase tracking-tighter">
                             <tr>
                                 <th class="p-4 w-12 text-center">#</th>
                                 <th class="p-4">SIREN</th>
@@ -109,7 +126,7 @@
         </div>
 
         <div id="contentBodacc" class="p-6 hidden">
-            <div id="statusArea" class="mb-6 text-sm font-black text-blue-700 min-h-[20px] bg-blue-50 p-4 rounded-lg border border-blue-100"></div>
+            <div id="statusArea" class="mb-6 text-sm font-black text-blue-700 min-h-[20px] bg-blue-50/50 p-4 rounded-lg border border-blue-100"></div>
 
             <div class="flex flex-col lg:flex-row justify-between lg:items-end mb-6 gap-4">
                 <div>
@@ -121,22 +138,22 @@
                 </button>
             </div>
 
-            <div class="overflow-x-auto max-h-[750px] overflow-y-auto custom-scroll border border-slate-200 rounded-xl shadow-2xl">
+            <div class="overflow-x-auto max-h-[750px] overflow-y-auto custom-scroll border border-slate-200 rounded-xl shadow-lg">
                 <table class="min-w-full leading-normal border-collapse" id="mainTable">
                     <thead>
-                        <tr class="bg-slate-900 text-white sticky top-0 z-10 shadow-md">
-                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase w-1">
+                        <tr class="bg-slate-100 text-slate-900 sticky top-0 z-10 shadow-md">
+                            <th class="px-3 py-5 border-b border-slate-200 text-left text-[10px] font-black uppercase w-1">
                                 <input type="checkbox" id="selectAllCheckbox" onclick="toggleSelectAll()" disabled class="h-4 w-4 rounded">
                             </th>
-                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase">SIREN</th>
-                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase">Nom / Gérant</th>
-                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase text-blue-400">📅 Sauv.</th>
-                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase text-orange-400">📅 Redr.</th>
-                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase text-red-400">📅 Liq.</th>
-                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase text-blue-300">Durée</th>
-                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase underline text-blue-400">Dernier Événement</th>
-                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase">Tribunal</th>
-                            <th class="px-3 py-5 border-b border-slate-700 text-left text-[10px] font-black uppercase">Extrait</th>
+                            <th class="px-3 py-5 border-b border-slate-200 text-left text-[10px] font-black uppercase">SIREN</th>
+                            <th class="px-3 py-5 border-b border-slate-200 text-left text-[10px] font-black uppercase">Nom / Gérant</th>
+                            <th class="px-3 py-5 border-b border-slate-200 text-left text-[10px] font-black uppercase text-blue-600">📅 Sauv.</th>
+                            <th class="px-3 py-5 border-b border-slate-200 text-left text-[10px] font-black uppercase text-orange-600">📅 Redr.</th>
+                            <th class="px-3 py-5 border-b border-slate-200 text-left text-[10px] font-black uppercase text-red-600">📅 Liq.</th>
+                            <th class="px-3 py-5 border-b border-slate-200 text-left text-[10px] font-black uppercase text-blue-500">Durée</th>
+                            <th class="px-3 py-5 border-b border-slate-200 text-left text-[10px] font-black uppercase underline text-blue-600">Dernier Événement</th>
+                            <th class="px-3 py-5 border-b border-slate-200 text-left text-[10px] font-black uppercase">Tribunal</th>
+                            <th class="px-3 py-5 border-b border-slate-200 text-left text-[10px] font-black uppercase">Extrait & Lien</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="bg-white text-[11px]"></tbody>
@@ -144,8 +161,47 @@
             </div>
         </div>
 
-        <footer class="bg-slate-900 p-4 text-center text-[10px] text-slate-500 font-bold border-t border-slate-800">
-            AUDIT-SENTINEL CORE v3.9.3 • DOUBLE-DATING RESTORED • &copy; 2026 BEEP BEEP Office
+        <div id="contentVeille" class="p-6 hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-slate-800 font-black text-xl uppercase tracking-tight flex items-center gap-2">
+                            <span class="w-3 h-3 bg-emerald-500 rounded-full"></span> Radar de Veille
+                        </h2>
+                        <p class="text-slate-500 text-xs mt-1">Importez un ancien rapport (.xlsx) pour identifier les changements d'états judiciaires.</p>
+                    </div>
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <input type="file" id="fileInputVeille" accept=".xlsx" class="text-xs file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer flex-1">
+                        <button onclick="compareVeille()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg font-bold transition shadow-md uppercase text-xs tracking-widest whitespace-nowrap">
+                            Vérifier les statuts
+                        </button>
+                    </div>
+                </div>
+                <div id="statusVeille" class="mt-4 text-[10px] font-bold h-4 text-slate-500 uppercase tracking-tighter"></div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 text-slate-900 font-bold uppercase tracking-tighter">
+                            <tr>
+                                <th class="p-4">SIREN</th>
+                                <th class="p-4">Dénomination</th>
+                                <th class="p-4">Ancien Statut (Fichier)</th>
+                                <th class="p-4">Nouveau Statut (Aujourd'hui)</th>
+                                <th class="p-4 text-center">Diagnostic</th>
+                            </tr>
+                        </thead>
+                        <tbody id="veilleTableBody" class="divide-y divide-slate-100">
+                            <tr><td colspan="5" class="p-12 text-center text-slate-400 italic">Importez un ancien rapport pour lancer la comparaison.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer class="bg-slate-900 p-4 text-center text-[10px] text-slate-400 font-bold border-t border-slate-800">
+            AUDIT-SENTINEL CORE v4.1.0 • MODULE VEILLE INTÉGRÉ & JUGEMENTS • &copy; 2026 BEEP BEEP Office
         </footer>
     </div>
 
@@ -164,10 +220,12 @@
         const sleep = ms => new Promise(res => setTimeout(res, ms));
 
         function switchTab(tab) {
-            document.getElementById('contentSiren').classList.toggle('hidden', tab !== 'siren');
-            document.getElementById('contentBodacc').classList.toggle('hidden', tab !== 'bodacc');
-            document.getElementById('tabSiren').className = tab === 'siren' ? 'flex-1 py-4 font-black text-sm uppercase tracking-widest tab-active' : 'flex-1 py-4 font-black text-sm uppercase tracking-widest tab-inactive';
-            document.getElementById('tabBodacc').className = tab === 'bodacc' ? 'flex-1 py-4 font-black text-sm uppercase tracking-widest tab-active' : 'flex-1 py-4 font-black text-sm uppercase tracking-widest tab-inactive';
+            ['siren', 'bodacc', 'veille'].forEach(t => {
+                document.getElementById(`content${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.toggle('hidden', tab !== t);
+                document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).className = 
+                    tab === t ? 'flex-1 py-4 font-black text-sm uppercase tracking-widest transition-all tab-active' 
+                              : 'flex-1 py-4 font-black text-sm uppercase tracking-widest transition-all tab-inactive';
+            });
         }
 
         async function searchCompany() {
@@ -187,11 +245,11 @@
             const list = document.getElementById('resultsList');
             container.classList.remove('hidden');
             list.innerHTML = results.map((co, index) => `
-                <label class="flex items-start gap-3 p-3 bg-slate-800 border border-slate-700 rounded-xl hover:border-blue-500 cursor-pointer transition-all">
-                    <input type="checkbox" data-idx="${index}" class="mt-1 h-5 w-5 rounded text-blue-500">
+                <label class="flex items-start gap-3 p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 cursor-pointer transition-all shadow-sm">
+                    <input type="checkbox" data-idx="${index}" class="mt-1 h-5 w-5 rounded text-blue-600 border-slate-300 focus:ring-blue-500">
                     <div class="overflow-hidden">
-                        <div class="font-bold text-white text-[11px] truncate uppercase">${co.nom_complet}</div>
-                        <div class="text-[10px] font-mono text-blue-400 font-bold">${co.siren}</div>
+                        <div class="font-bold text-slate-800 text-[11px] truncate uppercase">${co.nom_complet}</div>
+                        <div class="text-[10px] font-mono text-blue-600 font-bold">${co.siren}</div>
                     </div>
                 </label>
             `).join('');
@@ -308,7 +366,8 @@
             const data = await res.json();
             const results = data.results || [];
             const procDates = { SAUVEGARDE: { j: null, p: null }, REDRESSEMENT: { j: null, p: null }, LIQUIDATION: { j: null, p: null } };
-            let latestEvent = { label: "R.A.S", details: { dateJugement: "N/A", dateParution: "N/A", tribunal: "N/A", extrait: "Aucune procédure." }, date: null, style: "text-emerald-700 bg-emerald-100 border border-emerald-200" };
+            
+            let latestEvent = { label: "R.A.S", details: { dateJugement: "N/A", dateParution: "N/A", tribunal: "N/A", extrait: "Aucune procédure.", id: null }, date: null, style: "text-emerald-700 bg-emerald-100 border border-emerald-200" };
             let firstDate = null;
 
             [...results].reverse().forEach(r => {
@@ -329,7 +388,18 @@
                     else if (KEYWORDS.LIQ.some(kw => text.includes(kw))) { label = "LIQUIDATION"; style = "text-red-700 bg-red-100 border border-red-300"; }
                     else if (KEYWORDS.RED.some(kw => text.includes(kw))) { label = "REDRESSEMENT"; style = "text-orange-700 bg-orange-100 border border-orange-300"; }
                     else if (KEYWORDS.SAU.some(kw => text.includes(kw))) { label = "SAUVEGARDE"; style = "text-blue-700 bg-blue-100 border border-blue-300"; }
-                    if (label) latestEvent = { label, details: { dateJugement: formatDate(d.dj), dateParution: formatDate(d.dp), tribunal: r.tribunal || "N/A", extrait: d.jt.substring(0, 150) }, date: new Date(d.dp), style };
+                    if (label) latestEvent = { 
+                        label, 
+                        details: { 
+                            dateJugement: formatDate(d.dj), 
+                            dateParution: formatDate(d.dp), 
+                            tribunal: r.tribunal || "N/A", 
+                            extrait: d.jt.substring(0, 150),
+                            id: r.id 
+                        }, 
+                        date: new Date(d.dp), 
+                        style 
+                    };
                 }
             });
 
@@ -347,23 +417,91 @@
             row.className = "hover:bg-slate-50 border-b border-slate-100";
             const dCell = (o) => o.j ? `<div><div class="font-black text-slate-900">${o.j}</div><div class="text-[9px] text-slate-400 italic font-bold">Paru: ${o.p}</div></div>` : `<span class="empty-cell">N/A</span>`;
 
+            const bodaccLink = info.latestEvent.details.id ? 
+                `<a href="https://www.bodacc.fr/pages/annonces-commerciales-detail/?q.id=${info.latestEvent.details.id}" target="_blank" class="mt-2 inline-flex items-center gap-1 bg-white hover:bg-slate-50 text-blue-600 px-2.5 py-1 rounded border border-slate-200 font-bold transition shadow-sm">🔗 VOIR SUR BODACC.FR</a>` 
+                : '';
+
             row.innerHTML = `
-                <td class="px-3 py-5 w-1"><input type="checkbox" data-id="${idx}" class="row-checkbox h-4 w-4 rounded"></td>
-                <td class="px-3 py-5 font-mono font-bold text-blue-700">${siren}</td>
+                <td class="px-3 py-5 w-1"><input type="checkbox" data-id="${idx}" class="row-checkbox h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"></td>
+                <td class="px-3 py-5 font-mono font-bold text-blue-600">${siren}</td>
                 <td class="px-3 py-5 font-black uppercase text-slate-800">${finalList[idx].nom}</td>
                 <td class="px-3 py-5">${dCell(info.dates.SAUVEGARDE)}</td>
                 <td class="px-3 py-5">${dCell(info.dates.REDRESSEMENT)}</td>
                 <td class="px-3 py-5">${dCell(info.dates.LIQUIDATION)}</td>
-                <td class="px-3 py-5 font-black text-blue-600">${info.duration}</td>
-                <td class="px-3 py-5 bg-blue-50/30">
-                    <span class="px-3 py-1 rounded text-[10px] font-black ${info.latestEvent.style} mb-1 block w-fit">${info.latestEvent.label}</span>
+                <td class="px-3 py-5 font-black text-blue-500">${info.duration}</td>
+                <td class="px-3 py-5 bg-blue-50/20">
+                    <span class="px-3 py-1 rounded text-[10px] font-black ${info.latestEvent.style} mb-1 block w-fit shadow-sm">${info.latestEvent.label}</span>
                     <div class="font-black text-slate-900 text-[10px]">${info.latestEvent.details.dateJugement}</div>
                     <div class="text-[9px] text-slate-400 italic font-bold">Paru: ${info.latestEvent.details.dateParution}</div>
                 </td>
                 <td class="px-3 py-5 text-[10px] text-slate-400 uppercase font-bold">${info.latestEvent.details.tribunal}</td>
-                <td class="px-3 py-5 text-[10px] text-slate-500 max-w-[200px] leading-tight">${info.latestEvent.details.extrait}</td>
+                <td class="px-3 py-5 text-[10px] text-slate-500 max-w-[200px] leading-tight">
+                    ${info.latestEvent.details.extrait}
+                    <br>
+                    ${bodaccLink}
+                </td>
             `;
             tableBody.appendChild(row);
+        }
+
+        async function compareVeille() {
+            const fileInput = document.getElementById('fileInputVeille');
+            const status = document.getElementById('statusVeille');
+            const tbody = document.getElementById('veilleTableBody');
+
+            if (!fileInput.files[0]) {
+                alert("Veuillez d'abord sélectionner un fichier Excel.");
+                return;
+            }
+
+            status.innerHTML = '<span class="loader"></span> LECTURE DU FICHIER...';
+            
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const oldData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                
+                tbody.innerHTML = '';
+
+                for (let i = 0; i < oldData.length; i++) {
+                    const row = oldData[i];
+                    const siren = row.SIREN;
+                    const oldEvent = row.EVENT || "R.A.S";
+                    const oldDate = row.DERNIER_JUG || "N/A";
+                    
+                    if (!siren) continue;
+
+                    status.innerHTML = `<span class="loader"></span> VÉRIFICATION ${i+1}/${oldData.length} : ${siren}`;
+
+                    try {
+                        const info = await fetchFullHistory(siren);
+                        const newEvent = info.latestEvent.label;
+                        const newDate = info.latestEvent.details.dateJugement;
+                        
+                        const hasChanged = (oldEvent !== newEvent) || (oldDate !== newDate);
+                        
+                        tbody.innerHTML += `
+                            <tr class="${hasChanged ? 'bg-red-50/50' : 'bg-white'} border-b border-slate-100">
+                                <td class="p-4 font-mono font-bold text-blue-600">${siren}</td>
+                                <td class="p-4 font-black uppercase text-slate-800">${row.NOM || '-'}</td>
+                                <td class="p-4 text-[11px] text-slate-500">Statut : <span class="font-bold">${oldEvent}</span><br>Date : ${oldDate}</td>
+                                <td class="p-4 text-[11px] ${hasChanged ? 'text-red-700 font-bold' : 'text-slate-500'}">Statut : <span class="font-bold">${newEvent}</span><br>Date : ${newDate}</td>
+                                <td class="p-4 text-center font-black text-[10px]">
+                                    ${hasChanged ? 
+                                        '<span class="bg-red-100 text-red-700 px-3 py-1 rounded shadow-sm">⚠️ ALERTE : CHANGEMENT DÉTECTÉ</span>' : 
+                                        '<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded shadow-sm">✅ IDENTIQUE</span>'}
+                                </td>
+                            </tr>
+                        `;
+                        await sleep(300);
+                    } catch (err) {
+                        console.error("Erreur veille sur " + siren, err);
+                    }
+                }
+                status.innerHTML = "✅ VÉRIFICATION DE VEILLE TERMINÉE.";
+            };
+            reader.readAsArrayBuffer(fileInput.files[0]);
         }
 
         function formatDate(d) { if (!d) return null; const date = new Date(d); return isNaN(date.getTime()) ? null : date.toLocaleDateString("fr-FR"); }
